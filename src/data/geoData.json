@@ -3,42 +3,40 @@
   "features": [
     {
       "type": "Feature",
-      "properties": { "name": "Bagian Utara Minahasa Utara" },
+      "properties": {
+        "id": "wilayah-001",
+        "name": "Kecamatan Airmadidi",
+        "keterangan": "Wilayah ini memiliki jumlah penduduk terbanyak di Minahasa Utara."
+      },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [125.0264287, 1.454532],
-            [125.0072001, 1.4524284],
-            [124.9764282, 1.4495763],
-            [124.981952, 1.4551551],
-            [124.9655201, 1.4620254],
-            [125.2012, 1.5246],
-            [125.0886, 1.5235],
-            [124.9728, 1.4728],
-            [124.8974, 1.5235],
-            [124.8674, 1.7644]
+            [125.002, 1.462],
+            [125.012, 1.462],
+            [125.012, 1.472],
+            [125.002, 1.472],
+            [125.002, 1.462]
           ]
         ]
       }
     },
     {
       "type": "Feature",
-      "properties": { "name": "Bagian Selatan Minahasa Utara" },
+      "properties": {
+        "id": "wilayah-002",
+        "name": "Kecamatan Kalawat",
+        "keterangan": "Wilayah yang berkembang pesat secara infrastruktur."
+      },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [124.8771, 1.6721],
-            [125.0231, 1.7234],
-            [125.1125, 1.6212],
-            [125.2012, 1.6123],
-            [125.2201, 1.5325],
-            [125.1873, 1.4589],
-            [125.0756, 1.4534],
-            [124.9523, 1.4056],
-            [124.8821, 1.4567],
-            [124.8771, 1.6721]
+            [125.020, 1.460],
+            [125.030, 1.460],
+            [125.030, 1.470],
+            [125.020, 1.470],
+            [125.020, 1.460]
           ]
         ]
       }
