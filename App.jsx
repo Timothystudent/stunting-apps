@@ -1,23 +1,35 @@
 import React from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { StatusBar } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import SplashWrapper from './src/components/SplashWrapper';
+import LandingPage from './src/components/LandingPage';
+import LoginScreen from './src/components/LoginScreen';
 import MapView from './src/components/MapView';
+import DetailWilayah from './src/components/DetainWilayah';
+
+const Stack = createStackNavigator();
 
 const App = () => {
   return (
     <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={styles.container}>
-        <MapView />
-      </SafeAreaView>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Splash"
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen name="Splash" component={SplashWrapper} />
+          <Stack.Screen name="Landing" component={LandingPage} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Map" component={MapView} />
+          <Stack.Screen name="DetailWilayah" component={DetailWilayah} />
+
+        </Stack.Navigator>
+      </NavigationContainer>
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff', // opsional biar nggak ada flicker putih
-  },
-});
 
 export default App;
