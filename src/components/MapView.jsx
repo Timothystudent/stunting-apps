@@ -1,10 +1,12 @@
-import React, { useRef, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Alert } from "react-native";
+import React, { useRef, useEffect, useState } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, Alert, Animated } from "react-native";
 import { WebView } from "react-native-webview";
 import geoData from "../data/geoData.json";
 
 const MapView = ({ navigation }) => {
   const webViewRef = useRef(null);
+  const [selectedInfo, setSelectedInfo] = useState(null);
+  const slideAnim = useRef(new Animated.Value(300)).current;
 
   const mapHtml = `
     <!DOCTYPE html>
@@ -48,6 +50,7 @@ const MapView = ({ navigation }) => {
         window.addEventListener("message", function(event) {
           try {
             var geojsonData = JSON.parse(event.data);
+            console.log("GeoJSON received:", geojsonData);
             if (geoJsonLayer) {
               map.removeLayer(geoJsonLayer);
             }
@@ -86,21 +89,39 @@ const MapView = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    sendGeoJsonToWebView();
-  }, []);
+  // ❌ Tidak perlu dipanggil di useEffect
+  // useEffect(() => {
+  //   sendGeoJsonToWebView();
+  // }, []);
 
   const handleMessage = (event) => {
     try {
+      console.log("Data dari WebView:", event.nativeEvent.data);
       const data = JSON.parse(event.nativeEvent.data);
-      navigation.navigate('DetailWilayah', {
-        id: data.id,
-        name: data.name,
-        keterangan: data.keterangan,
-      });
+      setSelectedInfo(data);
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
     } catch (e) {
       Alert.alert("Error", "Gagal membaca informasi wilayah.");
     }
+  };
+
+  const closeInfoPanel = () => {
+    Animated.timing(slideAnim, {
+      toValue: 300,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setSelectedInfo(null);
+    });
+  };
+
+  const goToDetailPage = () => {
+    closeInfoPanel();
+    navigation.navigate('DetailWilayah', { info: selectedInfo });
   };
 
   return (
@@ -115,35 +136,58 @@ const MapView = ({ navigation }) => {
         onLoadEnd={sendGeoJsonToWebView}
         onMessage={handleMessage}
       />
-      <TouchableOpacity style={styles.backButton} onPress={navigation.goBack}>
-        <Text style={styles.backButtonText}>← Kembali</Text>
-      </TouchableOpacity>
+
+      {selectedInfo && (
+        <Animated.View style={[styles.infoPanel, { transform: [{ translateY: slideAnim }] }]}>
+          <Text style={styles.infoTitle}>{selectedInfo.name}</Text>
+          <Text style={styles.infoText}>{selectedInfo.keterangan}</Text>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity onPress={goToDetailPage} style={styles.detailButton}>
+              <Text style={styles.detailButtonText}>Lihat Detail</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={closeInfoPanel}>
+              <Text style={styles.closeText}>Tutup</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  webview: {
-    flex: 1,
-  },
-  backButton: {
+  container: { flex: 1 },
+  webview: { flex: 1 },
+  infoPanel: {
     position: 'absolute',
-    top: 40,
+    bottom: 80,
     left: 20,
-    backgroundColor: '#000000aa',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    right: 20,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 10,
+  },
+  infoTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  infoText: { fontSize: 14, color: '#444', marginBottom: 12 },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  detailButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 8,
-    zIndex: 999,
   },
-  backButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+  detailButtonText: { color: '#fff', fontWeight: 'bold' },
+  closeText: { color: '#007bff', fontWeight: 'bold' },
 });
 
 export default MapView;

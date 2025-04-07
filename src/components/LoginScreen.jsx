@@ -14,12 +14,15 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = () => {
     if (email && password) {
-      navigation.navigate('Map'); // ← Ganti dari onLogin() ke navigation.navigate
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
     } else {
       alert('Email dan password harus diisi.');
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/bkkbn.png')} style={styles.logo} />

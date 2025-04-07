@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet} from 'react-native';
 
-const DetailWilayah = ({ route, navigation }) => {
+const DetailWilayah = ({ route,}) => {
   const { id, name, keterangan } = route.params;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Detail Wilayah</Text>
+      <Text style={styles.title}>Tentang Wilayah</Text>
       <Text style={styles.label}>ID:</Text>
       <Text style={styles.text}>{id}</Text>
 
@@ -16,9 +16,9 @@ const DetailWilayah = ({ route, navigation }) => {
       <Text style={styles.label}>Keterangan:</Text>
       <Text style={styles.text}>{keterangan || "Tidak ada keterangan."}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
+      {/* <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
         <Text style={styles.buttonText}>← Kembali ke Peta</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
