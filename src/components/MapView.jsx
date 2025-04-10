@@ -3,91 +3,111 @@ import { View, StyleSheet, TouchableOpacity, Text, Alert, Animated } from "react
 import { WebView } from "react-native-webview";
 import geoData from "../data/geoData.json";
 
+
 const MapView = ({ navigation }) => {
   const webViewRef = useRef(null);
   const [selectedInfo, setSelectedInfo] = useState(null);
   const slideAnim = useRef(new Animated.Value(300)).current;
-
   const mapHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-      <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-      <style>
-        html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
-        #map { height: 100%; width: 100%; }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        var map = L.map('map').setView([-6.1754, 106.8201], 10);
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
+      #map { height: 100%; width: 100%; }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var map = L.map('map').setView([-6.1754, 106.8201], 10);
 
-        L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=ZhD5en5bTNPf7VzQe9L9', {
-          attribution: '&copy; MapTiler & OpenStreetMap',
-          tileSize: 512,
-          zoomOffset: -1,
-        }).addTo(map);
+      L.tileLayer('https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=ZhD5en5bTNPf7VzQe9L9', {
+        attribution: '&copy; MapTiler & OpenStreetMap',
+        tileSize: 512,
+        zoomOffset: -1,
+      }).addTo(map);
 
-        var geoJsonLayer;
+      var geoJsonLayer;
 
-        function onEachFeature(feature, layer) {
-          if (feature.properties && feature.properties.name) {
-            layer.on('click', function () {
-              const detail = {
-                id: feature.properties.id,
-                name: feature.properties.name,
-                keterangan: feature.properties.keterangan
-              };
-              window.ReactNativeWebView.postMessage(JSON.stringify(detail));
-            });
+      function onEachFeature(feature, layer) {
+  if (feature.properties && feature.properties.name) {
+    layer.on('click', function () {
+      const detail = {
+        id: feature.properties.id,
+        name: feature.properties.name,
+        keterangan: feature.properties.keterangan,
+        persentase: feature.properties.persentase
+      };
+      window.ReactNativeWebView.postMessage(JSON.stringify(detail));
+    });
+  }
+}
+
+      window.addEventListener("message", function(event) {
+        try {
+          var geojsonData = JSON.parse(event.data);
+          console.log("GeoJSON received:", geojsonData);
+          if (geoJsonLayer) {
+            map.removeLayer(geoJsonLayer);
           }
-        }
 
-        window.addEventListener("message", function(event) {
-          try {
-            var geojsonData = JSON.parse(event.data);
-            console.log("GeoJSON received:", geojsonData);
-            if (geoJsonLayer) {
-              map.removeLayer(geoJsonLayer);
-            }
+          geoJsonLayer = L.geoJSON(geojsonData, {
+            onEachFeature: onEachFeature,
+            style: function(feature) {
+              const p = feature.properties.persentase;
+              let fillColor = '#4daf4a'; // Hijau: 0%
 
-            geoJsonLayer = L.geoJSON(geojsonData, {
-              onEachFeature: onEachFeature,
-              style: {
-                color: "#3388ff",
+              if (p > 50) {
+                fillColor = '#e31a1c'; // Merah
+              } else if (p > 30) {
+                fillColor = '#ff7f00'; // Oranye
+              } else if (p > 0) {
+                fillColor = '#ffff00'; // Kuning
+              }
+
+              return {
+                fillColor: fillColor,
                 weight: 2,
                 opacity: 1,
-                fillOpacity: 0.4
-              }
-            }).addTo(map);
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7
+              };
+            }
+          }).addTo(map);
 
-            map.fitBounds(geoJsonLayer.getBounds());
-          } catch (e) {
-            console.error("GeoJSON error:", e);
-          }
-        });
-      </script>
-    </body>
-    </html>
-  `;
+          map.fitBounds(geoJsonLayer.getBounds());
+        } catch (e) {
+          console.error("GeoJSON error:", e);
+        }
+      });
+    </script>
+  </body>
+  </html>
+`;
 
   const sendGeoJsonToWebView = () => {
     if (webViewRef.current) {
+      const geoJsonString = JSON.stringify(geoData); // stringify pertama
       const script = `
+      (function() {
         try {
-          window.postMessage(${JSON.stringify(JSON.stringify(geoData))}, '*');
+          window.postMessage(${JSON.stringify(geoJsonString)}, '*'); // stringify kedua
         } catch(e) {
           console.error('Error sending GeoJSON:', e);
         }
-        true;
-      `;
+      })();
+      true;
+    `;
       webViewRef.current.injectJavaScript(script);
     }
   };
+
 
   // ❌ Tidak perlu dipanggil di useEffect
   // useEffect(() => {
@@ -96,18 +116,13 @@ const MapView = ({ navigation }) => {
 
   const handleMessage = (event) => {
     try {
-      console.log("Data dari WebView:", event.nativeEvent.data);
-      const data = JSON.parse(event.nativeEvent.data);
-      setSelectedInfo(data);
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
+      const detail = JSON.parse(event.nativeEvent.data);
+      navigation.navigate('DetailWilayah', detail);
     } catch (e) {
-      Alert.alert("Error", "Gagal membaca informasi wilayah.");
+      console.error("Gagal parsing data detail:", e);
     }
   };
+  
 
   const closeInfoPanel = () => {
     Animated.timing(slideAnim, {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, Animated } from 'react-native';
 import PagerView from 'react-native-pager-view';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const { width } = Dimensions.get('window');
 
@@ -8,12 +9,12 @@ const slides = [
   {
     id: 1,
     image: require('../../assets/images/bkkbn.png'),
-    text: 'Selamat datang di Aplikasi GIS untuk mendeteksi keluarga berisiko stunting di Minahasa Utara.',
+    text: 'Selamat datang di Aplikasi GIS untuk mengvisualisasikan keluarga berisiko stunting di Minahasa Utara.',
   },
   {
     id: 2,
     image: require('../../assets/images/bkkbn.png'),
-    text: 'Data didasarkan pada faktor-faktor seperti jarak kelahiran, pernikahan dini, dan sanitasi.',
+    text: 'Data didasarkan pada faktor-faktor seperti jarak kelahiran, pernikahan dini, sanitasi, dan akses air bersih.',
   },
   {
     id: 3,
@@ -24,10 +25,15 @@ const slides = [
 
 const LandingPage = ({ navigation }) => {
   const [currentPage, setCurrentPage] = useState(0);
+  const indicatorAnims = useRef(slides.map((_, i) => new Animated.Value(i === 0 ? 1 : 0))).current;
 
-  const indicatorAnims = useRef(
-    slides.map((_, i) => new Animated.Value(i === 0 ? 1 : 0))
-  ).current;
+  // Dropdown state
+  const [open, setOpen] = useState(false);
+  const [role, setRole] = useState(null);
+  const [items, setItems] = useState([
+    { label: 'Masyarakat', value: 'masyarakat' },
+    { label: 'Admin / BKKBN', value: 'admin' },
+  ]);
 
   useEffect(() => {
     indicatorAnims.forEach((anim, index) => {
@@ -38,6 +44,16 @@ const LandingPage = ({ navigation }) => {
       }).start();
     });
   }, [currentPage]);
+
+  const handleContinue = () => {
+    if (role === 'masyarakat') {
+      navigation.navigate('Register'); // arahkan ke halaman register
+    } else if (role === 'admin') {
+      navigation.navigate('Login'); // tetap ke login
+    }
+  };
+  
+  
 
   return (
     <View style={styles.container}>
@@ -50,13 +66,30 @@ const LandingPage = ({ navigation }) => {
           <View key={slide.id} style={styles.slide}>
             <Image source={slide.image} style={styles.logo} resizeMode="contain" />
             <Text style={styles.description}>{slide.text}</Text>
+
             {index === slides.length - 1 && (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() => navigation.navigate('Login')}
-              >
-                <Text style={styles.buttonText}>Masuk ke Peta</Text>
-              </TouchableOpacity>
+              <>
+                <View style={{ zIndex: 10, marginBottom: 20, width: '80%' }}>
+                  <DropDownPicker
+                    open={open}
+                    value={role}
+                    items={items}
+                    setOpen={setOpen}
+                    setValue={setRole}
+                    setItems={setItems}
+                    placeholder="Pilih Peran Anda"
+                    style={{ borderColor: '#89CFF0' }}
+                    dropDownContainerStyle={{ borderColor: '#89CFF0' }}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: role ? '#89CFF0' : '#ccc' }]}
+                  onPress={handleContinue}
+                  disabled={!role}
+                >
+                  <Text style={styles.buttonText}>Continue</Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         ))}
@@ -111,13 +144,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     color: '#444',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   button: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 50,
+    borderRadius: 40,
   },
   buttonText: {
     color: '#fff',

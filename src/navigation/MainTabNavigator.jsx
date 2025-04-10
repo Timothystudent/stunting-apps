@@ -11,6 +11,7 @@ const Tab = createBottomTabNavigator();
 const MainTabNavigator = () => {
   return (
     <Tab.Navigator
+    initialRouteName="Map"
       screenOptions={({ route }) => ({
         headerTitle: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -59,8 +60,8 @@ const MainTabNavigator = () => {
               <Image
                 source={iconSource}
                 style={{
-                  width: 26,
-                  height: 26,
+                  width: 30,
+                  height: 30,
                   tintColor: focused ? '#fff' : '#cce6ff',
                 }}
                 resizeMode="contain"
@@ -79,9 +80,9 @@ const MainTabNavigator = () => {
         },
         tabBarStyle: {
           backgroundColor: '#0094d4',
-          height: 80,
+          height: 75,
           paddingBottom: 5,
-          paddingTop: 5,
+          paddingTop: 20,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
         },

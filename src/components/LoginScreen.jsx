@@ -22,7 +22,7 @@ const LoginScreen = ({ navigation }) => {
       alert('Email dan password harus diisi.');
     }
   };
-  
+
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/bkkbn.png')} style={styles.logo} />
